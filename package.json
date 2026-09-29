@@ -1,0 +1,44 @@
+{
+  "name": "@menso/cli",
+  "version": "1.0.0",
+  "description": "AI users run real tasks on your live site and show where they get stuck, with a replay of every step. The command line for Menso.",
+  "type": "module",
+  "bin": {
+    "menso": "bin/menso.mjs"
+  },
+  "files": [
+    "bin",
+    "src",
+    "examples",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "keywords": [
+    "menso",
+    "ai user testing",
+    "usability testing",
+    "ux testing",
+    "mcp",
+    "ci",
+    "github actions"
+  ],
+  "homepage": "https://menso.io/docs/mcp",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/menso-io/menso.git"
+  },
+  "bugs": {
+    "email": "support@menso.io"
+  },
+  "author": "Menso <support@menso.io>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
+}

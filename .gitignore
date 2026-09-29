@@ -1,0 +1,6 @@
+.DS_Store
+*.pem
+.env*
+.mcpregistry_*
+node_modules/
+*.log

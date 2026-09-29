@@ -1,0 +1,47 @@
+# Run a Menso test after every successful deployment and add the findings to
+# the job summary. Copy this file to .github/workflows/menso.yml.
+#
+# 1. Create an API key at https://menso.io/settings.
+# 2. Add it as the repository secret MENSO_API_KEY.
+# 3. Every run spends credits (Speed 40, Quality 300), exactly as on menso.io,
+#    so choose the triggering events deliberately.
+name: Menso test after deploy
+
+on:
+  deployment_status:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: Public URL to test
+        required: true
+
+jobs:
+  menso:
+    if: github.event_name == 'workflow_dispatch' || github.event.deployment_status.state == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run a Menso test on the deployment
+        env:
+          MENSO_API_KEY: ${{ secrets.MENSO_API_KEY }}
+          TARGET_URL: ${{ github.event.inputs.url || github.event.deployment_status.environment_url }}
+        # --fail-under turns a TRACES score below 60 into a failed check (exit code 3).
+        run: npx --yes @menso/cli@1 run "$TARGET_URL" --template purchase --tier speed --wait --fail-under 60
+
+      # Sign-up flow instead: add the secret MENSO_TEST_PASSWORD and use a
+      # dedicated test inbox; plus-addressing gives every run a fresh account.
+      #
+      # - name: Run a Menso sign-up test
+      #   env:
+      #     MENSO_API_KEY: ${{ secrets.MENSO_API_KEY }}
+      #     MENSO_TEST_PASSWORD: ${{ secrets.MENSO_TEST_PASSWORD }}
+      #     TARGET_URL: ${{ github.event.deployment_status.environment_url }}
+      #   run: >
+      #     npx --yes @menso/cli@1 run "$TARGET_URL" --template signup
+      #     --email "qa+run${{ github.run_id }}@example.com" --wait
+      # Menso keeps the 100 most recent test accounts saved this way,
+      # separately from the ones you save on menso.io.
