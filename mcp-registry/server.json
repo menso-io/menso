@@ -3,13 +3,19 @@
   "name": "io.menso/menso",
   "title": "Menso",
   "description": "AI users run real tasks on your live site and show where they get stuck, with a replay of every step",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "websiteUrl": "https://menso.io/docs/mcp",
+  "repository": {
+    "url": "https://github.com/menso-io/menso",
+    "source": "github"
+  },
   "icons": [
     {
       "src": "https://menso.io/icon-192.png",
       "mimeType": "image/png",
-      "sizes": ["192x192"]
+      "sizes": [
+        "192x192"
+      ]
     }
   ],
   "remotes": [

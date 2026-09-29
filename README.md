@@ -65,6 +65,10 @@ To share it with a team, put this in `.mcp.json` at the project root; each perso
 }
 ```
 
+**Cursor plugin**
+
+This repository is also a Cursor plugin: `.cursor-plugin/plugin.json` and `mcp.json` add the Menso MCP server. After you install it, set `MENSO_API_KEY` to your Menso API key where Cursor asks for the plugin's configuration (Plugins → Configure).
+
 Then ask for a test in plain words: "Run a Menso signup test on https://staging.example.com and tell me where the AI user got stuck."
 
 ### Tools
