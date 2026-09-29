@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "menso": {
+      "url": "https://api.menso.io/mcp",
+      "headers": { "Authorization": "Bearer ${MENSO_API_KEY}" }
+    }
+  }
+}

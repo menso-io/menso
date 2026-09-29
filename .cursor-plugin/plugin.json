@@ -1,0 +1,25 @@
+{
+  "name": "menso",
+  "version": "1.0.0",
+  "description": "AI users run real tasks on your live site and show where they get stuck, with a replay of every step.",
+  "author": {
+    "name": "Menso",
+    "email": "support@menso.io"
+  },
+  "homepage": "https://menso.io/docs/mcp",
+  "repository": "https://github.com/menso-io/menso",
+  "license": "MIT",
+  "keywords": ["usability testing", "ux testing", "ai user testing", "ai users", "qa", "browser automation", "mcp"],
+  "logo": "assets/logo.png",
+  "variables": {
+    "type": "object",
+    "properties": {
+      "MENSO_API_KEY": {
+        "type": "string",
+        "title": "Menso API key",
+        "description": "Create it at menso.io/settings (Settings, Create API key). Menso shows it once; you can revoke it there."
+      }
+    },
+    "required": ["MENSO_API_KEY"]
+  }
+}
