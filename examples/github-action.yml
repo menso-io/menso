@@ -3,8 +3,8 @@
 #
 # 1. Create an API key at https://menso.io/settings.
 # 2. Add it as the repository secret MENSO_API_KEY.
-# 3. Every run spends credits (Speed 40, Quality 300), exactly as on menso.io,
-#    so choose the triggering events deliberately.
+# 3. Every run spends credits (Fast, --tier speed: 40; Deep, --tier quality: 300),
+#    exactly as on menso.io, so choose the triggering events deliberately.
 name: Menso test after deploy
 
 on:

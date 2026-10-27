@@ -91,6 +91,38 @@ test("run --json prints the structured result for scripts", async () => {
   assert.equal(result.calls[0].args.tier, "quality");
 });
 
+test("--tier fast and --tier deep send the server's speed and quality (Leo 10/6)", async () => {
+  const started = { run_test: text("Started", { test_id: "c".repeat(32), state: "running" }) };
+  for (const [flag, sent] of [
+    ["fast", "speed"],
+    [" Fast ", "speed"],
+    ["speed", "speed"],
+    ["deep", "quality"],
+    ["DEEP", "quality"],
+    ["quality", "quality"],
+  ]) {
+    const result = await run(["run", "example.com", "--tier", flag], { handlers: started });
+    assert.equal(result.code, EXIT.ok, flag);
+    assert.deepEqual(result.calls[0].args, { url: "example.com", template: "purchase", tier: sent }, flag);
+  }
+});
+
+test("an unknown --tier is a usage error that lists the accepted values, and nothing starts", async () => {
+  const result = await run(["run", "example.com", "--tier", "turbo"], {
+    handlers: { run_test: () => assert.fail("no run for an unknown tier") },
+  });
+  assert.equal(result.code, EXIT.usage);
+  assert.match(result.stderr, /--tier must be speed \(Fast\) or quality \(Deep\); fast and deep are accepted too/);
+  assert.equal(result.calls.length, 0);
+});
+
+test("the help names Fast and Deep beside the tier values", async () => {
+  const result = await run(["--help"]);
+  assert.equal(result.code, EXIT.ok);
+  assert.match(result.stdout, /--tier <tier> {8}speed \(Fast, default, 40 credits\) or quality \(Deep, 300 credits\)\./);
+  assert.match(result.stdout, /fast and deep are accepted too\./);
+});
+
 test("run --wait polls until done, prints findings and writes the GitHub summary", async () => {
   const summaryDir = mkdtempSync(join(tmpdir(), "menso-cli-"));
   const summary = join(summaryDir, "summary.md");
