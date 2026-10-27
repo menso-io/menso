@@ -4,7 +4,7 @@ AI users run real tasks on your live site and show where they get stuck, with a 
 
 This repository holds the public parts of [Menso](https://menso.io)'s developer integration:
 
-- the settings for Menso's hosted **MCP server**, for Claude Code, Cursor, Windsurf and any MCP client that supports Streamable HTTP and a custom Authorization header;
+- the settings for Menso's hosted **MCP server**, for Claude Code (as a plugin), Codex, Cursor, Windsurf and any MCP client that supports Streamable HTTP and a custom Authorization header;
 - `menso`, the **command line** for terminals and CI (`bin/`, `src/`);
 - the entry for the official MCP registry (`mcp-registry/server.json`).
 
@@ -18,7 +18,17 @@ Sign in to Menso, open [Settings](https://menso.io/settings) and choose **Create
 
 The server is hosted at `https://api.menso.io/mcp` (Streamable HTTP). Nothing to install.
 
-**Claude Code**
+**Claude Code (plugin)**
+
+This repository is a Claude Code plugin. Install it in one step; Claude Code asks for your Menso API key and keeps it in secure storage:
+
+```
+/plugin install menso --marketplace menso-io/menso
+```
+
+From a shell, the same is `claude plugin marketplace add menso-io/menso` and then `claude plugin install menso@menso`.
+
+**Claude Code (without the plugin)**
 
 ```sh
 claude mcp add --transport http menso https://api.menso.io/mcp \
@@ -63,6 +73,14 @@ To share it with a team, put this in `.mcp.json` at the project root; each perso
     }
   }
 }
+```
+
+**Codex** (`~/.codex/config.toml`; Codex reads the key from `MENSO_API_KEY` in your shell)
+
+```toml
+[mcp_servers.menso]
+url = "https://api.menso.io/mcp"
+bearer_token_env_var = "MENSO_API_KEY"
 ```
 
 **Cursor plugin**
