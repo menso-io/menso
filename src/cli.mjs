@@ -21,7 +21,8 @@ Options:
   --template <id>      purchase (default): read the homepage and pricing, decide whether to buy.
                        signup: create an account and reach the signed-in home (needs --email
                        and a password).
-  --tier <tier>        speed (default, 40 credits) or quality (300 credits).
+  --tier <tier>        speed (Fast, default, 40 credits) or quality (Deep, 300 credits).
+                       fast and deep are accepted too.
   --email <address>    signup: email for the new test account (or MENSO_TEST_EMAIL).
   --password-stdin     signup: read the test account's password from stdin
                        (default: MENSO_TEST_PASSWORD).
@@ -37,7 +38,7 @@ Environment:
   MENSO_API_KEY        required; create it at https://menso.io/settings
   MENSO_MCP_URL        server address (default ${DEFAULT_ENDPOINT})
 
-Runs spend Menso credits exactly like runs started on menso.io.
+Runs spend Menso credits like runs started on menso.io.
 Exit codes: 0 ok, 1 error, 2 usage, 3 run failed or scored below --fail-under.
 `;
 
@@ -56,6 +57,18 @@ const OPTIONS = {
 };
 
 class UsageError extends Error {}
+
+// People see the tiers as Fast and Deep on menso.io (Leo 10/6). The server's
+// tier values stay speed / quality, so the CLI sends only those.
+const TIER_ALIASES = new Map([
+  ["fast", "speed"],
+  ["deep", "quality"],
+]);
+
+export function normalizeTier(value) {
+  const tier = String(value ?? "speed").trim().toLowerCase();
+  return TIER_ALIASES.get(tier) ?? tier;
+}
 
 // The key travels in the Authorization header, so only send it over HTTPS
 // (plain HTTP only to this machine, for local testing).
@@ -241,9 +254,11 @@ export async function main(argv, io) {
 
     // run
     const template = values.template ?? "purchase";
-    const tier = values.tier ?? "speed";
+    const tier = normalizeTier(values.tier);
     if (!["purchase", "signup"].includes(template)) throw new UsageError("--template must be purchase or signup");
-    if (!["speed", "quality"].includes(tier)) throw new UsageError("--tier must be speed or quality");
+    if (!["speed", "quality"].includes(tier)) {
+      throw new UsageError("--tier must be speed (Fast) or quality (Deep); fast and deep are accepted too");
+    }
     if (threshold !== undefined && !values.wait) throw new UsageError("--fail-under needs --wait");
     const args = { url: target, template, tier };
     if (template === "signup") {
