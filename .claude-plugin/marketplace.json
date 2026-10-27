@@ -1,0 +1,18 @@
+{
+  "name": "menso",
+  "owner": {
+    "name": "Menso",
+    "email": "support@menso.io"
+  },
+  "metadata": {
+    "description": "Menso for Claude Code: AI users run real tasks on your live site and show where they get stuck."
+  },
+  "plugins": [
+    {
+      "name": "menso",
+      "source": "./",
+      "description": "AI users run real tasks on your live site and show where they get stuck, with a replay of every step.",
+      "category": "testing"
+    }
+  ]
+}
