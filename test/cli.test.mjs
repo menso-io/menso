@@ -78,7 +78,7 @@ test("run starts a purchase test and prints the start message", async () => {
     handlers: { run_test: text("Started Menso test abc on https://example.com", { test_id: "a".repeat(32), state: "running" }) },
   });
   assert.equal(result.code, EXIT.ok);
-  assert.deepEqual(result.calls[0].args, { url: "example.com", template: "purchase", tier: "speed" });
+  assert.deepEqual(result.calls[0].args, { url: "example.com", template: "purchase", tier: "quality" });
   assert.match(result.stdout, /Started Menso test/);
 });
 
@@ -119,7 +119,7 @@ test("an unknown --tier is a usage error that lists the accepted values, and not
 test("the help names Fast and Deep beside the tier values", async () => {
   const result = await run(["--help"]);
   assert.equal(result.code, EXIT.ok);
-  assert.match(result.stdout, /--tier <tier> {8}speed \(Fast, default, 40 credits\) or quality \(Deep, 300 credits\)\./);
+  assert.match(result.stdout, /--tier <tier> {8}quality \(Deep, default\) or speed\. Every run uses 1 test and runs at Deep depth\./);
   assert.match(result.stdout, /fast and deep are accepted too\./);
 });
 
@@ -178,7 +178,7 @@ test("signup reads the password from the environment or stdin, never from argv",
   assert.deepEqual(fromEnv.calls[0].args, {
     url: "example.com",
     template: "signup",
-    tier: "speed",
+    tier: "quality",
     email: "qa@example.com",
     password: "env-secret",
   });

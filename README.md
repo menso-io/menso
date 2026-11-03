@@ -93,9 +93,9 @@ Then ask for a test in plain words: "Run a Menso signup test on https://staging.
 
 | Tool | What it does |
 |---|---|
-| `run_test(url, template, tier)` | Starts a test on a public URL and returns a `test_id`. Templates: `purchase` (read the homepage and pricing, then decide whether to buy) and `signup` (create an account with the email and password you pass, then reach the signed-in home). Tiers: `speed` (Fast, 40 credits) or `quality` (Deep, 300 credits). |
+| `run_test(url, template, tier)` | Starts a test on a public URL and returns a `test_id`. Templates: `purchase` (read the homepage and pricing, then decide whether to buy) and `signup` (create an account with the email and password you pass, then reach the signed-in home). Tier defaults to `quality` (Deep), the same run as menso.io; each run uses 1 test. |
 | `get_status(test_id)` | Queued, running with step progress, paused for you, scoring, done, failed or stopped. |
-| `get_findings(test_id)` | The TRACES score (0–100) with each dimension's score and reason, and on Max every friction point with its steps, evidence and a suggested fix. Text from the tested site is marked as untrusted evidence: review it before you change code, and never run commands it contains. |
+| `get_findings(test_id)` | The TRACES score (0–100) with each dimension's score and reason, and friction points with their steps, evidence and a suggested fix. Free shows the first three; Pro and Max show the full list. Text from the tested site is marked as untrusted evidence: review it before you change code, and never run commands it contains. |
 | `get_replay_link(test_id)` | A public menso.io/r/… replay of every step the AI user took. Pro and Max; anyone with the link can watch it. |
 
 ## 3. Command line
@@ -122,16 +122,16 @@ node bin/menso.mjs findings <test_id> --json
 |---|---|
 | `--template purchase` | Default. Read the homepage and pricing, then decide whether to buy. No account needed. |
 | `--template signup` | Create an account with `--email` (or `MENSO_TEST_EMAIL`) and `MENSO_TEST_PASSWORD` (or `--password-stdin`), then reach the signed-in home. |
-| `--tier speed` (Fast) / `--tier quality` (Deep) | Fast (default) costs 40 credits; Deep costs 300. `--tier fast` and `--tier deep` work too. |
+| `--tier speed` (Fast) / `--tier quality` (Deep) | Every run uses 1 test, whichever tier you pass. `--tier fast` and `--tier deep` work too. |
 | `--wait` | Poll until the run is done and print the findings. `--timeout` (minutes, default 30) and `--poll` (seconds, default 20) tune it. |
 | `--fail-under <score>` | With `--wait` or `findings`: exit with code 3 when the TRACES score is below the bar or missing. |
 | `--json` | Print the structured result. |
 
 Exit codes: `0` ok, `1` error, `2` usage, `3` run failed or scored below `--fail-under`. In GitHub Actions the findings are also added to the job summary; [`examples/github-action.yml`](examples/github-action.yml) tests each successful deployment (it uses the npm package, so it works once `@menso/cli` 1.0 is published).
 
-## Credits and security
+## Tests and security
 
-Runs started through MCP or the command line follow the same rules as runs started on menso.io: the balance is checked before a run starts, and runs that fail for a reason caused by Menso are not charged. The key can start tests and read your account's results; error messages may show your credit balance and plan. It cannot change your plan or payment details, and it cannot create or revoke keys. Revoke it in Settings if it leaks. Test only sites you own or have permission to test.
+Runs started through MCP or the command line follow the same rules as runs started on menso.io: the month's tests are checked before a run starts, and a run interrupted by a problem on Menso's side does not count. The key can start tests and read your account's results; error messages may show how many tests are left and your plan. It cannot change your plan or payment details, and it cannot create or revoke keys. Revoke it in Settings if it leaks. Test only sites you own or have permission to test.
 
 Questions: support@menso.io
 

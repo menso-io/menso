@@ -3,8 +3,7 @@
 #
 # 1. Create an API key at https://menso.io/settings.
 # 2. Add it as the repository secret MENSO_API_KEY.
-# 3. Every run spends credits (Fast, --tier speed: 40; Deep, --tier quality: 300),
-#    exactly as on menso.io, so choose the triggering events deliberately.
+# 3. Every run uses 1 test, exactly as on menso.io, so choose the triggering events deliberately.
 name: Menso test after deploy
 
 on:
@@ -30,7 +29,7 @@ jobs:
           MENSO_API_KEY: ${{ secrets.MENSO_API_KEY }}
           TARGET_URL: ${{ github.event.inputs.url || github.event.deployment_status.environment_url }}
         # --fail-under turns a TRACES score below 60 into a failed check (exit code 3).
-        run: npx --yes @menso/cli@1 run "$TARGET_URL" --template purchase --tier speed --wait --fail-under 60
+        run: npx --yes @menso/cli@1 run "$TARGET_URL" --template purchase --wait --fail-under 60
 
       # Sign-up flow instead: add the secret MENSO_TEST_PASSWORD and use a
       # dedicated test inbox; plus-addressing gives every run a fresh account.

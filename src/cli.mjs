@@ -21,7 +21,7 @@ Options:
   --template <id>      purchase (default): read the homepage and pricing, decide whether to buy.
                        signup: create an account and reach the signed-in home (needs --email
                        and a password).
-  --tier <tier>        speed (Fast, default, 40 credits) or quality (Deep, 300 credits).
+  --tier <tier>        quality (Deep, default) or speed. Every run uses 1 test and runs at Deep depth.
                        fast and deep are accepted too.
   --email <address>    signup: email for the new test account (or MENSO_TEST_EMAIL).
   --password-stdin     signup: read the test account's password from stdin
@@ -38,7 +38,7 @@ Environment:
   MENSO_API_KEY        required; create it at https://menso.io/settings
   MENSO_MCP_URL        server address (default ${DEFAULT_ENDPOINT})
 
-Runs spend Menso credits like runs started on menso.io.
+Each run uses 1 of your Menso tests, like runs started on menso.io.
 Exit codes: 0 ok, 1 error, 2 usage, 3 run failed or scored below --fail-under.
 `;
 
@@ -66,7 +66,7 @@ const TIER_ALIASES = new Map([
 ]);
 
 export function normalizeTier(value) {
-  const tier = String(value ?? "speed").trim().toLowerCase();
+  const tier = String(value ?? "quality").trim().toLowerCase();
   return TIER_ALIASES.get(tier) ?? tier;
 }
 
@@ -275,7 +275,7 @@ export async function main(argv, io) {
     const pollMs = positiveNumber(values.poll, "--poll", 20) * 1000;
     const timeoutMs = positiveNumber(values.timeout, "--timeout", 30) * 60_000;
 
-    // Starting a run spends credits: never retry it automatically.
+    // Starting a run uses a test: never retry it automatically.
     const started = await client.callTool("run_test", args);
     if (started.isError) {
       err(textOf(started));
