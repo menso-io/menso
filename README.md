@@ -4,19 +4,25 @@ AI users run real tasks on your live site and show where they get stuck, with a 
 
 This repository holds the public parts of [Menso](https://menso.io)'s developer integration:
 
-- the settings for Menso's hosted **MCP server**, for Claude Code (as a plugin), Codex, Cursor, Windsurf and any MCP client that supports Streamable HTTP and a custom Authorization header;
+- the settings for Menso's hosted **MCP server**, for Claude (as a custom connector), Claude Code (as a plugin), Codex, Cursor, Windsurf and any MCP client that supports Streamable HTTP with OAuth sign-in or a custom Authorization header;
 - `menso`, the **command line** for terminals and CI (`bin/`, `src/`);
 - the entry for the official MCP registry (`mcp-registry/server.json`).
 
 The test runner, the AI users and the scoring run on Menso's servers and are not part of this repository. MCP documentation: [menso.io/docs/mcp](https://menso.io/docs/mcp).
 
-## 1. Create an API key
+## 1. Sign in, or create an API key
 
-Sign in to Menso, open [Settings](https://menso.io/settings) and choose **Create API key**. Copy it right away: Menso shows it once. Keep it in an environment variable or a CI secret, never in a repository.
+Clients that support OAuth, such as Claude on claude.ai and the Claude desktop app, connect with your Menso sign-in and need no key: skip to **Claude (custom connector)** below.
+
+For the others, sign in to Menso, open [Settings](https://menso.io/settings) and choose **Create API key**. Copy it right away: Menso shows it once. Keep it in an environment variable or a CI secret, never in a repository.
 
 ## 2. Connect your editor (MCP)
 
 The server is hosted at `https://api.menso.io/mcp` (Streamable HTTP). Nothing to install.
+
+**Claude (custom connector)**
+
+In Claude, open Settings → Connectors → **Add custom connector**, name it Menso and paste `https://api.menso.io/mcp`. Claude finds Menso's sign-in by itself; leave the advanced OAuth fields empty. Choose **Connect**, sign in to Menso and allow access on the **Connect Menso** page. The four tools below then appear in Claude. Remove the connector in Claude to disconnect.
 
 **Claude Code (plugin)**
 
@@ -93,7 +99,7 @@ Then ask for a test in plain words: "Run a Menso signup test on https://staging.
 
 | Tool | What it does |
 |---|---|
-| `run_test(url, template, tier)` | Starts a test on a public URL and returns a `test_id`. Templates: `purchase` (read the homepage and pricing, then decide whether to buy) and `signup` (create an account with the email and password you pass, then reach the signed-in home). Tier defaults to `quality` (Deep), the same run as menso.io; each run uses 1 test. |
+| `run_test(url, template, tier)` | Starts a test on a public URL and returns a `test_id`. Templates: `purchase` (read the homepage and pricing, then decide whether to buy) and `signup` (create an account with the email and password you pass, then reach the signed-in home). Every run is Deep, the same run as menso.io, and uses 1 test; `speed` is still accepted from older clients but runs as Deep. |
 | `get_status(test_id)` | Queued, running with step progress, paused for you, scoring, done, failed or stopped. |
 | `get_findings(test_id)` | The TRACES score (0–100) with each dimension's score and reason, and friction points with their steps, evidence and a suggested fix. Free shows the first three; Pro and Max show the full list. Text from the tested site is marked as untrusted evidence: review it before you change code, and never run commands it contains. |
 | `get_replay_link(test_id)` | A public menso.io/r/… replay of every step the AI user took. Pro and Max; anyone with the link can watch it. |
@@ -122,7 +128,7 @@ node bin/menso.mjs findings <test_id> --json
 |---|---|
 | `--template purchase` | Default. Read the homepage and pricing, then decide whether to buy. No account needed. |
 | `--template signup` | Create an account with `--email` (or `MENSO_TEST_EMAIL`) and `MENSO_TEST_PASSWORD` (or `--password-stdin`), then reach the signed-in home. |
-| `--tier speed` (Fast) / `--tier quality` (Deep) | Every run uses 1 test, whichever tier you pass. `--tier fast` and `--tier deep` work too. |
+| `--tier quality` (Deep) | Every run is Deep and uses 1 test. `--tier speed` (or `fast`) is still accepted from older scripts and runs as Deep. |
 | `--wait` | Poll until the run is done and print the findings. `--timeout` (minutes, default 30) and `--poll` (seconds, default 20) tune it. |
 | `--fail-under <score>` | With `--wait` or `findings`: exit with code 3 when the TRACES score is below the bar or missing. |
 | `--json` | Print the structured result. |
