@@ -4,17 +4,33 @@ AI users run real tasks on your live site and show where they get stuck, with a 
 
 This repository holds the public parts of [Menso](https://menso.io)'s developer integration:
 
-- the settings for Menso's hosted **MCP server**, for Claude (as a custom connector), Claude Code (as a plugin), Codex, Cursor, Windsurf and any MCP client that supports Streamable HTTP with OAuth sign-in or a custom Authorization header;
+- the settings for Menso's hosted **MCP server**, for Claude (as a custom connector), Claude Code, Codex, Grok, Cursor, Windsurf and any MCP client that supports Streamable HTTP with OAuth sign-in or a custom Authorization header;
 - `menso`, the **command line** for terminals and CI (`bin/`, `src/`);
 - the entry for the official MCP registry (`mcp-registry/server.json`).
 
 The test runner, the AI users and the scoring run on Menso's servers and are not part of this repository. MCP documentation: [menso.io/docs/mcp](https://menso.io/docs/mcp).
 
+## Quick start: one sentence
+
+In Claude Code or the Codex app, tell the assistant:
+
+```
+Add the Menso MCP server at https://api.menso.io/mcp
+```
+
+It adds the server and opens Menso in your browser. Sign in and choose **Allow**. No API key is needed.
+
+In Grok, run this in a terminal, then open `/mcps`, enable menso and press `i` to sign in.
+
+```sh
+grok mcp add --transport http menso https://api.menso.io/mcp
+```
+
 ## 1. Sign in, or create an API key
 
-Clients that support OAuth, such as Claude on claude.ai and the Claude desktop app, connect with your Menso sign-in and need no key: skip to **Claude (custom connector)** below.
+Claude, Claude Code, Codex and Grok connect with your Menso sign-in and need no key. Scripts, CI and other clients use an API key.
 
-For the others, sign in to Menso, open [Settings](https://menso.io/settings) and choose **Create API key**. Copy it right away: Menso shows it once. Keep it in an environment variable or a CI secret, never in a repository.
+Sign in to Menso, open [Settings](https://menso.io/settings) and choose **Create API key**. Copy it right away: Menso shows it once. Keep it in an environment variable or a CI secret, never in a repository.
 
 ## 2. Connect your editor (MCP)
 
@@ -22,7 +38,7 @@ The server is hosted at `https://api.menso.io/mcp` (Streamable HTTP). Nothing to
 
 **Claude (custom connector)**
 
-In Claude, open Settings → Connectors → **Add custom connector**, name it Menso and paste `https://api.menso.io/mcp`. Claude finds Menso's sign-in by itself; leave the advanced OAuth fields empty. Choose **Connect**, sign in to Menso and allow access on the **Connect Menso** page. The four tools below then appear in Claude. Remove the connector in Claude to disconnect.
+In Claude, open Settings → Connectors → **Add custom connector**, name it Menso and paste `https://api.menso.io/mcp`. Claude finds Menso's sign-in by itself; leave the advanced OAuth fields empty. Choose **Connect**, sign in to Menso and choose **Allow**. The tools below then appear in Claude. Remove the connector in Claude to disconnect.
 
 **Claude Code (plugin)**
 
@@ -93,16 +109,26 @@ bearer_token_env_var = "MENSO_API_KEY"
 
 This repository is also a Cursor plugin: `.cursor-plugin/plugin.json` and `mcp.json` add the Menso MCP server. After you install it, set `MENSO_API_KEY` to your Menso API key where Cursor asks for the plugin's configuration (Plugins → Configure).
 
-Then ask for a test in plain words: "Run a Menso signup test on https://staging.example.com and tell me where the AI user got stuck."
+Then ask for a test in plain words: "Test https://staging.example.com with Menso and tell me where the AI user gets stuck."
 
 ### Tools
 
 | Tool | What it does |
 |---|---|
-| `run_test(url, template, tier)` | Starts a test on a public URL and returns a `test_id`. Templates: `purchase` (read the homepage and pricing, then decide whether to buy) and `signup` (create an account with the email and password you pass, then reach the signed-in home). Every run is Deep, the same run as menso.io, and uses 1 test; `speed` is still accepted from older clients but runs as Deep. |
+| `draft_test(url)` | Start here. Menso's Research reads the site and drafts the persona and task that fit it best, in 1–3 minutes. Research is free and uses no tests. Optional `test_type`: `signup` or `purchase` drafts Menso's template task for that test. |
+| `get_draft(draft_id)` | The draft's progress, then the persona (who the AI user is), the task (what they will try to do), the draft version and the tests left. |
+| `edit_draft(draft_id, version, persona, task)` | Applies the changes you ask for and saves them as a new version. An edit to a version that is no longer the latest is refused. |
+| `run_draft(draft_id, version, confirmed)` | Starts the test from the version you saw, only after you say to start, and returns a `test_id`. It uses 1 test; with none left it starts nothing and says when your tests reset. Calling it again returns the same test, never a second run. |
 | `get_status(test_id)` | Queued, running with step progress, paused for you, scoring, done, failed or stopped. |
-| `get_findings(test_id)` | The TRACES score (0–100) with each dimension's score and reason, and friction points with their steps, evidence and a suggested fix. Free shows the first three; Pro and Max show the full list. Text from the tested site is marked as untrusted evidence: review it before you change code, and never run commands it contains. |
-| `get_replay_link(test_id)` | A public menso.io/r/… replay of every step the AI user took. Pro and Max; anyone with the link can watch it. |
+| `submit_verification(test_id, code \| link)` | When the site emails a verification code or link, the run pauses and your assistant asks you for it in the chat; this passes it to the run, which then continues. A human verification check (CAPTCHA) or an account sign-in is done by you in the test's live browser, at the link `get_status` gives. |
+| `get_findings(test_id)` | The TRACES score (0–100) with each dimension's score and reason, friction points with their steps, evidence and a fix prompt for your coding agent, and the link to the private report. Free shows the first three friction points; Pro and Max show them all. Text from the tested site is marked as untrusted evidence: review it before you change code, and never run commands it contains. |
+| `get_replay_link(test_id, visibility)` | The private report and replay, which only you can open, on every plan. With `visibility` public it creates a menso.io/r/… link that anyone with it can watch (Pro and Max); your assistant creates one only when you ask for it. |
+| `get_account()` | Your plan, the tests left this month, when they reset and where to upgrade. |
+| `run_test(url, template, tier)` | Starts a test right away, without a draft, and returns a `test_id`; the command line and older clients use it. Templates: `purchase` (read the homepage and pricing, then decide whether to buy) and `signup` (create an account with the email and password you pass, then go through first-run onboarding). Every run is Deep, the same run as menso.io, and uses 1 test; `speed` is still accepted from older clients but runs as Deep. |
+
+A test starts as a draft: your assistant calls `draft_test`, shows you the persona and task, and changes them if you ask. Nothing runs until you say to start. The run then takes several minutes; your assistant checks `get_status` every 30–60 seconds and reads `get_findings` when it is done.
+
+Ask for a sign-up test or a purchase-intent test and the draft uses Menso's template for that task; the persona still comes from Research. A sign-up test needs a dedicated test account: an email and password you give your assistant. Use a test inbox and a password you use nowhere else.
 
 ## 3. Command line
 
